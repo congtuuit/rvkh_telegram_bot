@@ -25,41 +25,47 @@ export default async function handler(req, res) {
     if (text.startsWith("/user")) {
       const id = text.split(" ")[1];
 
-      const apiRes = await fetch(`${apiDomain}/user/${id}`, {
+      const apiRes = await fetch(`${apiDomain}/user?target=${id}`, {
         headers: commonHeaders
       });
       const data = await apiRes.json();
 
-      reply = `User ${id}: ${JSON.stringify(data)}`;
+      if (data.id) {
+        reply = `👤 User Info:\n- ID: ${data.id}\n- Email: ${data.email}\n- Status: ${data.status === 'locked' ? '🔒 Locked' : '✅ Active'}`;
+      } else {
+        reply = `❌ Không tìm thấy user ${id}`;
+      }
     }
 
     // /lock 123
     else if (text.startsWith("/lock")) {
       const id = text.split(" ")[1];
 
-      await fetch(`${apiDomain}/lock/${id}`, {
+      const apiRes = await fetch(`${apiDomain}/user?target=${id}&action=lock`, {
         method: "POST",
         headers: commonHeaders
       });
+      const data = await apiRes.json();
 
-      reply = `🔒 Đã khóa user ${id}`;
+      reply = data.success ? `🔒 Đã khóa user ${id}` : `❌ Lỗi: ${data.message}`;
     }
 
     // /unlock 123
     else if (text.startsWith("/unlock")) {
       const id = text.split(" ")[1];
 
-      await fetch(`${apiDomain}/unlock/${id}`, {
+      const apiRes = await fetch(`${apiDomain}/user?target=${id}&action=unlock`, {
         method: "POST",
         headers: commonHeaders
       });
+      const data = await apiRes.json();
 
-      reply = `🔓 Đã mở khóa user ${id}`;
+      reply = data.success ? `🔓 Đã mở khóa user ${id}` : `❌ Lỗi: ${data.message}`;
     }
 
   } catch (err) {
     console.error("API Error:", err);
-    reply = "Lỗi gọi API";
+    reply = "Lỗi kết nối API";
   }
 
   // gửi lại Telegram
