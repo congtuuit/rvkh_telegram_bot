@@ -64,8 +64,8 @@ export default async function handler(req, res) {
     }
 
   } catch (err) {
-    console.error("API Error:", err);
-    reply = "Lỗi kết nối API";
+    console.error("API Error details:", err);
+    reply = `❌ Lỗi kết nối API: ${err.message || "Không xác định"}`;
   }
 
   // gửi lại Telegram
