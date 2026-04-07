@@ -11,12 +11,14 @@ export default async function handler(req, res) {
   const apiDomain = process.env.API_DOMAIN;
   const apiUsername = process.env.API_USERNAME;
   const apiPassword = process.env.API_PASSWORD;
+  const apiSecret = process.env.API_SECRET; // Optional: To bypass Cloudflare WAF
 
   const basicAuth = Buffer.from(`${apiUsername}:${apiPassword}`).toString('base64');
   const commonHeaders = {
     "Authorization": `Basic ${basicAuth}`,
     "Content-Type": "application/json",
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    ...(apiSecret && { "X-RVKH-Secret": apiSecret })
   };
 
   let reply = "Sai cú pháp";
