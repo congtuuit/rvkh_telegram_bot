@@ -1,7 +1,7 @@
 export default async function handler(req, res) {
   const body = req.body;
 
-  if (!body.message) {
+  if (!body || !body.message) {
     return res.status(200).send("ok");
   }
 
@@ -15,7 +15,8 @@ export default async function handler(req, res) {
   const basicAuth = Buffer.from(`${apiUsername}:${apiPassword}`).toString('base64');
   const commonHeaders = {
     "Authorization": `Basic ${basicAuth}`,
-    "Content-Type": "application/json"
+    "Content-Type": "application/json",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
   };
 
   let reply = "Sai cú pháp";
@@ -28,6 +29,13 @@ export default async function handler(req, res) {
       const apiRes = await fetch(`${apiDomain}/user?target=${id}`, {
         headers: commonHeaders
       });
+
+      if (!apiRes.ok) {
+        const errorText = await apiRes.text();
+        console.error(`API Error ${apiRes.status}:`, errorText.substring(0, 500));
+        throw new Error(`HTTP Error ${apiRes.status} from WordPress`);
+      }
+
       const data = await apiRes.json();
 
       if (data.id) {
@@ -45,6 +53,8 @@ export default async function handler(req, res) {
         method: "POST",
         headers: commonHeaders
       });
+
+      if (!apiRes.ok) throw new Error(`HTTP Error ${apiRes.status} from WordPress`);
       const data = await apiRes.json();
 
       reply = data.success ? `🔒 Đã khóa user ${id}` : `❌ Lỗi: ${data.message}`;
@@ -58,6 +68,8 @@ export default async function handler(req, res) {
         method: "POST",
         headers: commonHeaders
       });
+
+      if (!apiRes.ok) throw new Error(`HTTP Error ${apiRes.status} from WordPress`);
       const data = await apiRes.json();
 
       reply = data.success ? `🔓 Đã mở khóa user ${id}` : `❌ Lỗi: ${data.message}`;
